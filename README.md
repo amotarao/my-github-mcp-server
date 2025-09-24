@@ -45,4 +45,48 @@ This server is configured for deployment on Vercel. The `vercel.json` configurat
 
 ## MCP Integration
 
-To use this server with Claude Desktop or other MCP clients, add it to your MCP configuration file.
+### Claude Desktop Configuration
+
+Add to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Linux**: `~/.config/claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "node",
+      "args": ["/absolute/path/to/your/my-github-mcp-server/build/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_personal_access_token_here"
+      }
+    }
+  }
+}
+```
+
+### Other MCP Clients
+
+For stdio-based MCP clients, run:
+
+```bash
+GITHUB_TOKEN=your_token_here node build/index.js
+```
+
+### Authentication
+
+The server automatically includes the GitHub token in API request headers when available. The token is read from the `GITHUB_TOKEN` environment variable and added to the `Authorization` header for all GitHub API calls.
+
+Without a token, the server works with GitHub's public API with standard rate limits.
+
+### Available Tools
+
+Once configured, the following tools will be available in your MCP client:
+
+- `get_repository_info` - Get detailed repository information
+- `list_repository_issues` - List repository issues with filtering
+- `get_pull_request` - Get pull request details
+- `search_repositories` - Search GitHub repositories
+- `get_user_info` - Get user or organization information
