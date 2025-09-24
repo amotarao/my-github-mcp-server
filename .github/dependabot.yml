@@ -8,17 +8,17 @@ updates:
       time: "09:00"
       timezone: "Asia/Tokyo"
     groups:
-      react-related:
+      react:
         patterns:
           - "react"
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
-      next-related:
+      next:
         patterns:
           - "next"
           - "eslint-config-next"
-      typescript-ecosystem:
+      typescript:
         patterns:
           - "@types/node"
           - "typescript"
