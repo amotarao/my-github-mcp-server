@@ -7,8 +7,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import express, { Request, Response } from "express";
 import { IncomingMessage, ServerResponse } from "node:http";
+import { createServer } from "node:http";
 
 const GITHUB_API_BASE = "https://api.github.com";
 const USER_AGENT = "GitHub-MCP-Server/1.0.0";
@@ -86,88 +86,43 @@ const GetUserInfoSchema = z.object({
   username: z.string().describe("GitHub username or organization name"),
 });
 
-const server = new Server(
-  {
-    name: "github-mcp-server",
-    version: "1.0.0",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  }
-);
+function setupServerHandlers(server: Server) {
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+      tools: [
+        {
+          name: "get_repository_info",
+          description: "Get detailed information about a GitHub repository including description, stars, forks, and other metadata",
+          inputSchema: GetRepositoryInfoSchema,
+        },
+        {
+          name: "list_repository_issues",
+          description: "List issues for a GitHub repository with optional filtering by state",
+          inputSchema: ListRepositoryIssuesSchema,
+        },
+        {
+          name: "get_pull_request",
+          description: "Get detailed information about a specific pull request including status, files changed, and metadata",
+          inputSchema: GetPullRequestSchema,
+        },
+        {
+          name: "search_repositories",
+          description: "Search GitHub repositories by query with sorting options",
+          inputSchema: SearchRepositoriesSchema,
+        },
+        {
+          name: "get_user_info",
+          description: "Get information about a GitHub user or organization",
+          inputSchema: GetUserInfoSchema,
+        },
+      ],
+    };
+  });
 
-server.setRequestHandler(ListToolsRequestSchema, async (request, extra) => {
-  const mcpToolsets = extra?.requestInfo?.headers?.['x-mcp-toolsets'];
-  
-  const allTools = [
-    {
-      name: "get_repository_info",
-      description: "Get detailed information about a GitHub repository including description, stars, forks, and other metadata",
-      inputSchema: GetRepositoryInfoSchema,
-      toolset: "repos",
-    },
-    {
-      name: "list_repository_issues",
-      description: "List issues for a GitHub repository with optional filtering by state",
-      inputSchema: ListRepositoryIssuesSchema,
-      toolset: "issues",
-    },
-    {
-      name: "get_pull_request",
-      description: "Get detailed information about a specific pull request including status, files changed, and metadata",
-      inputSchema: GetPullRequestSchema,
-      toolset: "pulls",
-    },
-    {
-      name: "search_repositories",
-      description: "Search GitHub repositories by query with sorting options",
-      inputSchema: SearchRepositoriesSchema,
-      toolset: "repos",
-    },
-    {
-      name: "get_user_info",
-      description: "Get information about a GitHub user or organization",
-      inputSchema: GetUserInfoSchema,
-      toolset: "users",
-    },
-  ];
+  server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
+    const { name, arguments: args } = request.params;
 
-  let tools = allTools;
-  if (mcpToolsets && typeof mcpToolsets === 'string') {
-    const requestedToolsets = mcpToolsets.split(',').map(t => t.trim());
-    tools = allTools.filter(tool => requestedToolsets.includes(tool.toolset));
-  }
-
-  const responseTools = tools.map(({ toolset, ...tool }) => tool);
-
-  return {
-    tools: responseTools,
-  };
-});
-
-server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
-  const { name, arguments: args } = request.params;
-
-  const authHeader = extra?.requestInfo?.headers?.authorization;
-  const githubToken = typeof authHeader === 'string' 
-    ? (authHeader.startsWith('Bearer ') 
-        ? authHeader.slice(7)
-        : authHeader.startsWith('token ')
-        ? authHeader.slice(6)
-        : undefined)
-    : undefined;
-
-  const mcpToolsets = extra?.requestInfo?.headers?.['x-mcp-toolsets'];
-  const mcpReadonly = extra?.requestInfo?.headers?.['x-mcp-readonly'];
-  
-  if (mcpToolsets) {
-    console.log(`MCP Toolsets requested: ${mcpToolsets}`);
-  }
-  if (mcpReadonly === 'true') {
-    console.log('MCP Read-only mode requested');
-  }
+    const githubToken = extra?.requestInfo?.headers?.['x-github-token'] as string | undefined;
 
   try {
     switch (name) {
@@ -372,34 +327,87 @@ ${user.public_gists !== undefined ? `- 📝 Public Gists: ${user.public_gists}` 
       isError: true,
     };
   }
-});
+  });
+}
 
 async function main() {
-  const app = express();
-  
-  app.use(express.json({ limit: '4mb' }));
-  
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
-  
-  await server.connect(transport);
-  
-  app.all('/mcp', async (req: IncomingMessage, res: ServerResponse) => {
-    await transport.handleRequest(req, res, (req as any).body);
-  });
-  
-  app.get('/', (req: Request, res: Response) => {
-    res.json({ 
-      name: 'GitHub MCP Server',
-      version: '1.0.0',
-      transport: 'http',
-      status: 'running'
-    });
-  });
-  
   const port = process.env.PORT || 3000;
-  app.listen(port, () => {
+  
+  const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    if (req.method === 'GET' && req.url === '/') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        name: 'GitHub MCP Server',
+        version: '1.0.0',
+        transport: 'http',
+        status: 'running'
+      }));
+      return;
+    }
+    
+    if (req.method === 'POST' && req.url === '/mcp') {
+      let body = '';
+      req.on('data', (chunk: any) => {
+        body += chunk.toString();
+      });
+      
+      req.on('end', async () => {
+        try {
+          const mcpServer = new Server(
+            {
+              name: "github-mcp-server",
+              version: "1.0.0",
+            },
+            {
+              capabilities: {
+                tools: {},
+              },
+            }
+          );
+          
+          setupServerHandlers(mcpServer);
+          
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: undefined,
+          });
+          
+          res.on('close', () => {
+            transport.close();
+            mcpServer.close();
+          });
+          
+          await mcpServer.connect(transport);
+          await transport.handleRequest(req, res, JSON.parse(body));
+        } catch (error) {
+          console.error('Error handling MCP request:', error);
+          if (!res.headersSent) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              jsonrpc: '2.0',
+              error: {
+                code: -32603,
+                message: 'Internal server error',
+              },
+              id: null,
+            }));
+          }
+        }
+      });
+      return;
+    }
+    
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Not found"
+      },
+      id: null
+    }));
+  });
+  
+  httpServer.listen(port, () => {
     console.error(`GitHub MCP Server running on HTTP port ${port}`);
   });
 }
