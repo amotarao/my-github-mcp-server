@@ -53,6 +53,8 @@ Add to your Claude Desktop configuration file:
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 **Linux**: `~/.config/claude/claude_desktop_config.json`
 
+#### Basic Configuration
+
 ```json
 {
   "mcpServers": {
@@ -67,6 +69,30 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
+#### Advanced Configuration (Optional)
+
+For compatibility with the official GitHub MCP server, you can also specify toolsets and read-only mode:
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "https://your-deployment-url.vercel.app/mcp",
+      "headers": {
+        "Authorization": "token your_github_personal_access_token_here",
+        "X-MCP-Toolsets": "repos,issues,pulls,users",
+        "X-MCP-Readonly": "false"
+      }
+    }
+  }
+}
+```
+
+**Optional Headers:**
+- `X-MCP-Toolsets`: Comma-separated list of toolsets to enable (`repos`, `issues`, `pulls`, `users`)
+- `X-MCP-Readonly`: Set to `"true"` for read-only mode (currently informational only)
+
 ### Local Development
 
 For local testing, start the server:
@@ -76,6 +102,9 @@ pnpm build && pnpm start
 ```
 
 Then configure your MCP client to use:
+
+#### Basic Local Configuration
+
 ```json
 {
   "mcpServers": {
@@ -84,6 +113,24 @@ Then configure your MCP client to use:
       "url": "http://localhost:3000/mcp",
       "headers": {
         "Authorization": "token your_github_personal_access_token_here"
+      }
+    }
+  }
+}
+```
+
+#### Advanced Local Configuration (Optional)
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp",
+      "headers": {
+        "Authorization": "token your_github_personal_access_token_here",
+        "X-MCP-Toolsets": "repos,issues",
+        "X-MCP-Readonly": "true"
       }
     }
   }

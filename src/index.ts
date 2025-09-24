@@ -98,35 +98,52 @@ const server = new Server(
   }
 );
 
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+server.setRequestHandler(ListToolsRequestSchema, async (request, extra) => {
+  const mcpToolsets = extra?.requestInfo?.headers?.['x-mcp-toolsets'];
+  
+  const allTools = [
+    {
+      name: "get_repository_info",
+      description: "Get detailed information about a GitHub repository including description, stars, forks, and other metadata",
+      inputSchema: GetRepositoryInfoSchema,
+      toolset: "repos",
+    },
+    {
+      name: "list_repository_issues",
+      description: "List issues for a GitHub repository with optional filtering by state",
+      inputSchema: ListRepositoryIssuesSchema,
+      toolset: "issues",
+    },
+    {
+      name: "get_pull_request",
+      description: "Get detailed information about a specific pull request including status, files changed, and metadata",
+      inputSchema: GetPullRequestSchema,
+      toolset: "pulls",
+    },
+    {
+      name: "search_repositories",
+      description: "Search GitHub repositories by query with sorting options",
+      inputSchema: SearchRepositoriesSchema,
+      toolset: "repos",
+    },
+    {
+      name: "get_user_info",
+      description: "Get information about a GitHub user or organization",
+      inputSchema: GetUserInfoSchema,
+      toolset: "users",
+    },
+  ];
+
+  let tools = allTools;
+  if (mcpToolsets && typeof mcpToolsets === 'string') {
+    const requestedToolsets = mcpToolsets.split(',').map(t => t.trim());
+    tools = allTools.filter(tool => requestedToolsets.includes(tool.toolset));
+  }
+
+  const responseTools = tools.map(({ toolset, ...tool }) => tool);
+
   return {
-    tools: [
-      {
-        name: "get_repository_info",
-        description: "Get detailed information about a GitHub repository including description, stars, forks, and other metadata",
-        inputSchema: GetRepositoryInfoSchema,
-      },
-      {
-        name: "list_repository_issues",
-        description: "List issues for a GitHub repository with optional filtering by state",
-        inputSchema: ListRepositoryIssuesSchema,
-      },
-      {
-        name: "get_pull_request",
-        description: "Get detailed information about a specific pull request including status, files changed, and metadata",
-        inputSchema: GetPullRequestSchema,
-      },
-      {
-        name: "search_repositories",
-        description: "Search GitHub repositories by query with sorting options",
-        inputSchema: SearchRepositoriesSchema,
-      },
-      {
-        name: "get_user_info",
-        description: "Get information about a GitHub user or organization",
-        inputSchema: GetUserInfoSchema,
-      },
-    ],
+    tools: responseTools,
   };
 });
 
@@ -141,6 +158,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
         ? authHeader.slice(6)
         : undefined)
     : undefined;
+
+  const mcpToolsets = extra?.requestInfo?.headers?.['x-mcp-toolsets'];
+  const mcpReadonly = extra?.requestInfo?.headers?.['x-mcp-readonly'];
+  
+  if (mcpToolsets) {
+    console.log(`MCP Toolsets requested: ${mcpToolsets}`);
+  }
+  if (mcpReadonly === 'true') {
+    console.log('MCP Read-only mode requested');
+  }
 
   try {
     switch (name) {
