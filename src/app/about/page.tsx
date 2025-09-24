@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function About() {
   return (
@@ -11,14 +11,14 @@ export default function About() {
           About
         </Link>
       </nav>
-      
+
       <main>
         <h1>About</h1>
         <p>
           This is a GitHub MCP (Model Context Protocol) server implementation
           built with Next.js and TypeScript.
         </p>
-        
+
         <div>
           <h2>Technology Stack</h2>
           <ul>
@@ -29,10 +29,10 @@ export default function About() {
           </ul>
         </div>
       </main>
-      
+
       <footer className="footer">
         <p>&copy; 2025 GitHub MCP Server</p>
       </footer>
     </div>
-  )
+  );
 }
