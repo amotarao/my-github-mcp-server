@@ -1,24 +1,37 @@
 {
   "name": "my-github-mcp-server",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "A GitHub MCP (Model Context Protocol) server implementation",
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "dev": "next dev",
     "lint": "next lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "github",
+    "model-context-protocol"
+  ],
+  "author": "amotarao",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
-    "next": "15.5.4",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "zod": "3"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
-    "@types/react": "^19.1.13",
-    "@types/react-dom": "^19.1.9",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "eslint": "^9.36.0",
     "eslint-config-next": "15.5.4",
     "prettier": "^3.0.0",
