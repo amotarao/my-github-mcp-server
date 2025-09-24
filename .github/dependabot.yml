@@ -8,17 +8,23 @@ updates:
       time: "09:00"
       timezone: "Asia/Tokyo"
     groups:
-      react-ecosystem:
+      react-related:
         patterns:
-          - "react*"
-          - "next*"
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      next-related:
+        patterns:
+          - "next"
+          - "eslint-config-next"
       typescript-ecosystem:
         patterns:
-          - "@types/*"
+          - "@types/node"
           - "typescript"
       dev-tools:
         patterns:
-          - "eslint*"
+          - "eslint"
           - "prettier*"
     open-pull-requests-limit: 5
     reviewers:
