@@ -72,7 +72,7 @@ Add to your Claude Desktop configuration file:
 For local testing, start the server:
 
 ```bash
-pnpm build && pnpm start
+pnpm dev
 ```
 
 Then configure your MCP client to use:

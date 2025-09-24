@@ -2,20 +2,12 @@
   "name": "my-github-mcp-server",
   "version": "1.0.0",
   "description": "A GitHub MCP (Model Context Protocol) server implementation",
-  "type": "module",
-  "main": "build/index.js",
-  "bin": {
-    "github-mcp-server": "./build/index.js"
-  },
   "scripts": {
-    "build": "tsc && chmod 755 build/index.js",
-    "start": "node build/index.js",
-    "dev": "npm run build && npm start",
+    "build": "next build",
+    "start": "next start",
+    "dev": "next dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "files": [
-    "build"
-  ],
   "keywords": [
     "mcp",
     "github",
@@ -25,10 +17,15 @@
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
     "zod": "3"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "typescript": "^5.9.2"
   }
 }
