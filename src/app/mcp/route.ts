@@ -5,6 +5,8 @@ import { createMcpHandler } from "mcp-handler";
 const GITHUB_API_BASE = "https://api.github.com";
 const USER_AGENT = "GitHub-MCP-Server/1.0.0";
 
+let currentGitHubToken: string | undefined;
+
 async function makeGitHubRequest(
   endpoint: string,
   githubToken?: string
@@ -31,7 +33,7 @@ async function makeGitHubRequest(
 
 
 
-const handler = createMcpHandler(
+const mcpHandler = createMcpHandler(
   (server) => {
     server.tool(
       "get_repository_info",
@@ -41,7 +43,7 @@ const handler = createMcpHandler(
         repo: z.string().describe("Repository name"),
       },
       async ({ owner, repo }) => {
-        const githubToken = process.env.GITHUB_PAT_FOR_PROJECT;
+        const githubToken = currentGitHubToken || process.env.GITHUB_PAT_FOR_PROJECT;
         const content = await makeGitHubRequest(`/repos/${owner}/${repo}`, githubToken);
         
         return {
@@ -73,7 +75,7 @@ Homepage: ${content.homepage || "None"}`,
         state: z.enum(["open", "closed", "all"]).optional().default("open").describe("Issue state filter"),
       },
       async ({ owner, repo, state }) => {
-        const githubToken = process.env.GITHUB_PAT_FOR_PROJECT;
+        const githubToken = currentGitHubToken || process.env.GITHUB_PAT_FOR_PROJECT;
         const content = await makeGitHubRequest(`/repos/${owner}/${repo}/issues?state=${state}&per_page=10`, githubToken);
         
         const issuesList = content.map((issue: any) => 
@@ -100,7 +102,7 @@ Homepage: ${content.homepage || "None"}`,
         pull_number: z.number().describe("Pull request number"),
       },
       async ({ owner, repo, pull_number }) => {
-        const githubToken = process.env.GITHUB_PAT_FOR_PROJECT;
+        const githubToken = currentGitHubToken || process.env.GITHUB_PAT_FOR_PROJECT;
         const content = await makeGitHubRequest(`/repos/${owner}/${repo}/pulls/${pull_number}`, githubToken);
         
         return {
@@ -135,7 +137,7 @@ ${content.body || "No description"}`,
         order: z.enum(["asc", "desc"]).optional().default("desc").describe("Sort order"),
       },
       async ({ query, sort, order }) => {
-        const githubToken = process.env.GITHUB_PAT_FOR_PROJECT;
+        const githubToken = currentGitHubToken || process.env.GITHUB_PAT_FOR_PROJECT;
         let endpoint = `/search/repositories?q=${encodeURIComponent(query)}&per_page=10`;
         if (sort) endpoint += `&sort=${sort}`;
         if (order) endpoint += `&order=${order}`;
@@ -164,7 +166,7 @@ ${content.body || "No description"}`,
         username: z.string().describe("GitHub username or organization name"),
       },
       async ({ username }) => {
-        const githubToken = process.env.GITHUB_PAT_FOR_PROJECT;
+        const githubToken = currentGitHubToken || process.env.GITHUB_PAT_FOR_PROJECT;
         const content = await makeGitHubRequest(`/users/${username}`, githubToken);
         
         return {
@@ -197,5 +199,12 @@ Profile: ${content.html_url}`,
     verboseLogs: true,
   }
 );
+
+const handler = async (request: Request) => {
+  const githubTokenHeader = request.headers.get("X-GITHUB-TOKEN");
+  currentGitHubToken = Array.isArray(githubTokenHeader) ? githubTokenHeader[0] : githubTokenHeader || undefined;
+  
+  return mcpHandler(request);
+};
 
 export { handler as GET, handler as POST, handler as DELETE };
