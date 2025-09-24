@@ -12,8 +12,5 @@
       "src": "/(.*)",
       "dest": "/build/index.js"
     }
-  ],
-  "env": {
-    "GITHUB_TOKEN": "@github_token"
-  }
+  ]
 }
