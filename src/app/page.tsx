@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -11,11 +11,11 @@ export default function Home() {
           About
         </Link>
       </nav>
-      
+
       <main>
         <h1>GitHub MCP Server</h1>
         <p>A GitHub MCP (Model Context Protocol) server implementation.</p>
-        
+
         <div>
           <h2>Features</h2>
           <ul>
@@ -25,10 +25,10 @@ export default function Home() {
           </ul>
         </div>
       </main>
-      
+
       <footer className="footer">
         <p>&copy; 2025 GitHub MCP Server</p>
       </footer>
     </div>
-  )
+  );
 }
