@@ -13,12 +13,20 @@
     "dev": "npm run build && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "files": ["build"],
-  "keywords": ["mcp", "github", "model-context-protocol"],
+  "files": [
+    "build"
+  ],
+  "keywords": [
+    "mcp",
+    "github",
+    "model-context-protocol"
+  ],
   "author": "amotarao",
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
+    "@types/express": "^5.0.3",
+    "express": "^5.1.0",
     "zod": "3"
   },
   "devDependencies": {

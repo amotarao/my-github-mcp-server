@@ -57,27 +57,42 @@ Add to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "github": {
-      "command": "node",
-      "args": ["/absolute/path/to/your/my-github-mcp-server/build/index.js"],
-      "env": {
-        "GITHUB_TOKEN": "your_github_personal_access_token_here"
+      "type": "http",
+      "url": "https://your-deployment-url.vercel.app/mcp",
+      "headers": {
+        "Authorization": "token your_github_personal_access_token_here"
       }
     }
   }
 }
 ```
 
-### Other MCP Clients
+### Local Development
 
-For stdio-based MCP clients, run:
+For local testing, start the server:
 
 ```bash
-GITHUB_TOKEN=your_token_here node build/index.js
+pnpm build && pnpm start
+```
+
+Then configure your MCP client to use:
+```json
+{
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp",
+      "headers": {
+        "Authorization": "token your_github_personal_access_token_here"
+      }
+    }
+  }
+}
 ```
 
 ### Authentication
 
-The server automatically includes the GitHub token in API request headers when available. The token is read from the `GITHUB_TOKEN` environment variable and added to the `Authorization` header for all GitHub API calls.
+The server reads the GitHub token from the `Authorization` header in HTTP requests. The token should be provided in the format `token your_github_token` or `Bearer your_github_token`.
 
 Without a token, the server works with GitHub's public API with standard rate limits.
 

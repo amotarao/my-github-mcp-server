@@ -9,6 +9,10 @@
   ],
   "routes": [
     {
+      "src": "/mcp",
+      "dest": "/build/index.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/build/index.js"
     }

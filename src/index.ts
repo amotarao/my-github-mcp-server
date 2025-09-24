@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import express, { Request, Response } from "express";
+import { IncomingMessage, ServerResponse } from "node:http";
 
 const GITHUB_API_BASE = "https://api.github.com";
 const USER_AGENT = "GitHub-MCP-Server/1.0.0";
@@ -19,6 +21,7 @@ interface GitHubApiResponse<T = any> {
 
 async function makeGitHubRequest<T = any>(
   endpoint: string,
+  githubToken?: string,
   options: RequestInit = {}
 ): Promise<GitHubApiResponse<T>> {
   try {
@@ -29,7 +32,6 @@ async function makeGitHubRequest<T = any>(
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    const githubToken = process.env.GITHUB_TOKEN;
     if (githubToken) {
       headers["Authorization"] = `token ${githubToken}`;
     }
@@ -128,14 +130,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
   const { name, arguments: args } = request.params;
+
+  const authHeader = extra?.requestInfo?.headers?.authorization;
+  const githubToken = typeof authHeader === 'string' 
+    ? (authHeader.startsWith('Bearer ') 
+        ? authHeader.slice(7)
+        : authHeader.startsWith('token ')
+        ? authHeader.slice(6)
+        : undefined)
+    : undefined;
 
   try {
     switch (name) {
       case "get_repository_info": {
         const { owner, repo } = GetRepositoryInfoSchema.parse(args);
-        const result = await makeGitHubRequest(`/repos/${owner}/${repo}`);
+        const result = await makeGitHubRequest(`/repos/${owner}/${repo}`, githubToken);
         
         if (result.error) {
           return {
@@ -176,7 +187,7 @@ ${repoData.homepage ? `- Homepage: ${repoData.homepage}` : ""}`;
 
       case "list_repository_issues": {
         const { owner, repo, state, limit } = ListRepositoryIssuesSchema.parse(args);
-        const result = await makeGitHubRequest(`/repos/${owner}/${repo}/issues?state=${state}&per_page=${limit}`);
+        const result = await makeGitHubRequest(`/repos/${owner}/${repo}/issues?state=${state}&per_page=${limit}`, githubToken);
         
         if (result.error) {
           return {
@@ -209,7 +220,7 @@ ${issue.body ? `- **Description:** ${issue.body.substring(0, 200)}${issue.body.l
 
       case "get_pull_request": {
         const { owner, repo, pull_number } = GetPullRequestSchema.parse(args);
-        const result = await makeGitHubRequest(`/repos/${owner}/${repo}/pulls/${pull_number}`);
+        const result = await makeGitHubRequest(`/repos/${owner}/${repo}/pulls/${pull_number}`, githubToken);
         
         if (result.error) {
           return {
@@ -248,7 +259,7 @@ ${pr.body || "No description provided"}
 
       case "search_repositories": {
         const { query, sort, limit } = SearchRepositoriesSchema.parse(args);
-        const result = await makeGitHubRequest(`/search/repositories?q=${encodeURIComponent(query)}&sort=${sort}&per_page=${limit}`);
+        const result = await makeGitHubRequest(`/search/repositories?q=${encodeURIComponent(query)}&sort=${sort}&per_page=${limit}`, githubToken);
         
         if (result.error) {
           return {
@@ -283,7 +294,7 @@ ${repositories.map((repo: any) => `## ${repo.full_name}
 
       case "get_user_info": {
         const { username } = GetUserInfoSchema.parse(args);
-        const result = await makeGitHubRequest(`/users/${username}`);
+        const result = await makeGitHubRequest(`/users/${username}`, githubToken);
         
         if (result.error) {
           return {
@@ -337,9 +348,33 @@ ${user.public_gists !== undefined ? `- 📝 Public Gists: ${user.public_gists}` 
 });
 
 async function main() {
-  const transport = new StdioServerTransport();
+  const app = express();
+  
+  app.use(express.json({ limit: '4mb' }));
+  
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+  });
+  
   await server.connect(transport);
-  console.error("GitHub MCP Server running on stdio");
+  
+  app.all('/mcp', async (req: IncomingMessage, res: ServerResponse) => {
+    await transport.handleRequest(req, res, (req as any).body);
+  });
+  
+  app.get('/', (req: Request, res: Response) => {
+    res.json({ 
+      name: 'GitHub MCP Server',
+      version: '1.0.0',
+      transport: 'http',
+      status: 'running'
+    });
+  });
+  
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.error(`GitHub MCP Server running on HTTP port ${port}`);
+  });
 }
 
 main().catch((error) => {
