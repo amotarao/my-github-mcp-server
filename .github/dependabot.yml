@@ -18,14 +18,6 @@ updates:
         patterns:
           - "next"
           - "eslint-config-next"
-      typescript:
-        patterns:
-          - "@types/node"
-          - "typescript"
-      dev-tools:
-        patterns:
-          - "eslint"
-          - "prettier*"
     open-pull-requests-limit: 5
     reviewers:
       - "amotarao"
