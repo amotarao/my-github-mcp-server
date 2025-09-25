@@ -6,11 +6,6 @@ A GitHub MCP (Model Context Protocol) server implementation that provides tools 
 
 This MCP server provides the following tools:
 
-- **get_repository_info**: Get detailed information about a GitHub repository including description, stars, forks, and other metadata
-- **list_repository_issues**: List issues for a GitHub repository with optional filtering by state
-- **get_pull_request**: Get detailed information about a specific pull request including status, files changed, and metadata
-- **search_repositories**: Search GitHub repositories by query with sorting options
-- **get_user_info**: Get information about a GitHub user or organization
 - **get_parent_of_sub_issue**: Get the parent issue of a sub-issue using GitHub Sub-Issues API
 - **list_sub_issues**: List sub-issues for a GitHub issue with pagination and filtering support
 - **get_id_of_issue**: Get the internal GitHub issue ID from an issue number
@@ -104,11 +99,6 @@ Without a token, the server works with GitHub's public API with standard rate li
 
 Once configured, the following tools will be available in your MCP client:
 
-- `get_repository_info` - Get detailed repository information
-- `list_repository_issues` - List repository issues with filtering
-- `get_pull_request` - Get pull request details
-- `search_repositories` - Search GitHub repositories
-- `get_user_info` - Get user or organization information
 - `get_parent_of_sub_issue` - Get the parent issue of a sub-issue
 - `list_sub_issues` - List sub-issues with pagination and filtering
 - `get_id_of_issue` - Get the internal GitHub issue ID from an issue number
