@@ -8,9 +8,8 @@ This MCP server provides the following tools:
 
 - **get_parent_of_sub_issue**: Get the parent issue of a sub-issue using GitHub Sub-Issues API
 - **list_sub_issues**: List sub-issues for a GitHub issue with pagination and filtering support
-- **add_sub_issues**: Add multiple sub-issues to a GitHub issue using GitHub Sub-Issues API with batch processing support
-- **remove_sub_issues**: Remove multiple sub-issues from a GitHub issue using GitHub Sub-Issues API with batch processing support
 - **get_id_of_issue**: Get the internal GitHub issue ID from an issue number
+- **add_sub_issues**: Add multiple sub-issues to a GitHub issue using GitHub Sub-Issues API with batch processing support
 
 ## Installation
 
