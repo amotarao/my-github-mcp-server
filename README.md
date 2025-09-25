@@ -36,7 +36,7 @@ pnpm start
 
 The server supports optional GitHub API authentication via environment variables:
 
-- `GITHUB_PAT_FOR_PROJECT`: GitHub personal access token for authenticated requests (optional, but recommended for higher rate limits)
+- `GITHUB_PERSONAL_ACCESS_TOKEN`: GitHub personal access token for authenticated requests (optional, but recommended for higher rate limits)
 
 ## MCP Integration
 
