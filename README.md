@@ -13,6 +13,7 @@ This MCP server provides the following tools:
 - **get_user_info**: Get information about a GitHub user or organization
 - **get_parent_of_sub_issue**: Get the parent issue of a sub-issue using GitHub Sub-Issues API
 - **list_sub_issues**: List sub-issues for a GitHub issue with pagination and filtering support
+- **add_sub_issues**: Add multiple sub-issues to a GitHub issue using GitHub Sub-Issues API with batch processing support
 
 ## Installation
 
@@ -110,3 +111,4 @@ Once configured, the following tools will be available in your MCP client:
 - `get_user_info` - Get user or organization information
 - `get_parent_of_sub_issue` - Get parent issue of a sub-issue
 - `list_sub_issues` - List sub-issues with pagination and filtering
+- `add_sub_issues` - Add multiple sub-issues to a parent issue with batch processing
