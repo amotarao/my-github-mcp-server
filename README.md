@@ -48,14 +48,19 @@ Add to your Claude Desktop configuration file:
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 **Linux**: `~/.config/claude/claude_desktop_config.json`
 
-#### Production
+### Server URLs
+
+- **Production**: `https://your-deployment-url.vercel.app/mcp`
+- **Local Development**: `http://localhost:3000/mcp`
+
+### Configuration
 
 ```json
 {
   "mcpServers": {
     "github": {
       "type": "http",
-      "url": "https://your-deployment-url.vercel.app/mcp",
+      "url": "SERVER_URL_HERE",
       "headers": {
         "X-GITHUB-TOKEN": "your_github_personal_access_token_here"
       }
@@ -64,21 +69,7 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
-#### Local Development
-
-```json
-{
-  "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "http://localhost:3000/mcp",
-      "headers": {
-        "X-GITHUB-TOKEN": "your_github_personal_access_token_here"
-      }
-    }
-  }
-}
-```
+Replace `SERVER_URL_HERE` with the appropriate URL from the Server URLs section above.
 
 ### Authentication
 
