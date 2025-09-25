@@ -11,9 +11,12 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "mcp-handler": "^1.0.2",
     "next": "15.5.4",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "zod": "^3"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
