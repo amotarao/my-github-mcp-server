@@ -237,6 +237,44 @@ ${content.body || "No description"}`,
           }
         }
       );
+
+      server.tool(
+        "get_id_of_issue",
+        "Get the internal GitHub issue ID from an issue number",
+        {
+          owner: z.string().describe("Repository owner (username or organization)"),
+          repo: z.string().describe("Repository name"),
+          issue_number: z.number().describe("Issue number to get the ID for"),
+        },
+        async ({ owner, repo, issue_number }) => {
+          const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
+          
+          try {
+            const content = await makeGitHubRequest(`/repos/${owner}/${repo}/issues/${issue_number}`, token);
+            
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Issue #${issue_number} in ${owner}/${repo} has ID: ${content.id}`,
+                },
+              ],
+            };
+          } catch (error) {
+            if (error instanceof Error && error.message.includes('404')) {
+              return {
+                content: [
+                  {
+                    type: "text",
+                    text: `Issue #${issue_number} not found in ${owner}/${repo}.`,
+                  },
+                ],
+              };
+            }
+            throw error;
+          }
+        }
+      );
     },
     {
       serverInfo: {
