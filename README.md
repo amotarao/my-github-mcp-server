@@ -50,7 +50,7 @@ Add to your Claude Desktop configuration file:
 
 ### Server URLs
 
-- **Production**: `https://your-deployment-url.vercel.app/mcp`
+- **Production**: `https://amon-github-mcp-server.vercel.app/mcp`
 - **Local Development**: `http://localhost:3000/mcp`
 
 ### Configuration
