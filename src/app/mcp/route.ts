@@ -1,53 +1,59 @@
-import { z } from "zod";
-import { NextRequest } from "next/server";
 import { createMcpHandler } from "mcp-handler";
+import { z } from "zod";
 
 const GITHUB_API_BASE = "https://api.github.com";
 const USER_AGENT = "GitHub-MCP-Server/1.0.0";
 
 async function makeGitHubRequest(
   endpoint: string,
-  githubToken?: string
+  githubToken?: string,
 ): Promise<any> {
   const url = `${GITHUB_API_BASE}${endpoint}`;
-  
+
   const headers: Record<string, string> = {
     "User-Agent": USER_AGENT,
-    "Accept": "application/vnd.github.v3+json",
+    Accept: "application/vnd.github.v3+json",
   };
-  
+
   if (githubToken) {
     headers["Authorization"] = `token ${githubToken}`;
   }
-  
+
   const response = await fetch(url, { headers });
-  
+
   if (!response.ok) {
-    throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `GitHub API error: ${response.status} ${response.statusText}`,
+    );
   }
-  
+
   return response.json();
 }
 
-
-
 const handler = async (request: Request) => {
   const githubTokenHeader = request.headers.get("X-GITHUB-TOKEN");
-  const githubToken = Array.isArray(githubTokenHeader) ? githubTokenHeader[0] : githubTokenHeader || undefined;
-  
+  const githubToken = Array.isArray(githubTokenHeader)
+    ? githubTokenHeader[0]
+    : githubTokenHeader || undefined;
+
   const mcpHandler = createMcpHandler(
     (server) => {
       server.tool(
         "get_repository_info",
         "Get detailed information about a GitHub repository including description, stars, forks, and other metadata",
         {
-          owner: z.string().describe("Repository owner (username or organization)"),
+          owner: z
+            .string()
+            .describe("Repository owner (username or organization)"),
           repo: z.string().describe("Repository name"),
         },
         async ({ owner, repo }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
-          const content = await makeGitHubRequest(`/repos/${owner}/${repo}`, token);
-          
+          const content = await makeGitHubRequest(
+            `/repos/${owner}/${repo}`,
+            token,
+          );
+
           return {
             content: [
               {
@@ -65,25 +71,37 @@ Homepage: ${content.homepage || "None"}`,
               },
             ],
           };
-        }
+        },
       );
 
       server.tool(
         "list_repository_issues",
         "List issues for a GitHub repository with optional filtering by state",
         {
-          owner: z.string().describe("Repository owner (username or organization)"),
+          owner: z
+            .string()
+            .describe("Repository owner (username or organization)"),
           repo: z.string().describe("Repository name"),
-          state: z.enum(["open", "closed", "all"]).optional().default("open").describe("Issue state filter"),
+          state: z
+            .enum(["open", "closed", "all"])
+            .optional()
+            .default("open")
+            .describe("Issue state filter"),
         },
         async ({ owner, repo, state }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
-          const content = await makeGitHubRequest(`/repos/${owner}/${repo}/issues?state=${state}&per_page=10`, token);
-          
-          const issuesList = content.map((issue: any) => 
-            `#${issue.number}: ${issue.title} (${issue.state}) - ${issue.html_url}`
-          ).join('\n');
-          
+          const content = await makeGitHubRequest(
+            `/repos/${owner}/${repo}/issues?state=${state}&per_page=10`,
+            token,
+          );
+
+          const issuesList = content
+            .map(
+              (issue: any) =>
+                `#${issue.number}: ${issue.title} (${issue.state}) - ${issue.html_url}`,
+            )
+            .join("\n");
+
           return {
             content: [
               {
@@ -92,21 +110,26 @@ Homepage: ${content.homepage || "None"}`,
               },
             ],
           };
-        }
+        },
       );
 
       server.tool(
         "get_pull_request",
         "Get detailed information about a specific pull request including status, files changed, and metadata",
         {
-          owner: z.string().describe("Repository owner (username or organization)"),
+          owner: z
+            .string()
+            .describe("Repository owner (username or organization)"),
           repo: z.string().describe("Repository name"),
           pull_number: z.number().describe("Pull request number"),
         },
         async ({ owner, repo, pull_number }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
-          const content = await makeGitHubRequest(`/repos/${owner}/${repo}/pulls/${pull_number}`, token);
-          
+          const content = await makeGitHubRequest(
+            `/repos/${owner}/${repo}/pulls/${pull_number}`,
+            token,
+          );
+
           return {
             content: [
               {
@@ -127,7 +150,7 @@ ${content.body || "No description"}`,
               },
             ],
           };
-        }
+        },
       );
 
       server.tool(
@@ -135,21 +158,31 @@ ${content.body || "No description"}`,
         "Search GitHub repositories by query with sorting options",
         {
           query: z.string().describe("Search query"),
-          sort: z.enum(["stars", "forks", "help-wanted-issues", "updated"]).optional().describe("Sort field"),
-          order: z.enum(["asc", "desc"]).optional().default("desc").describe("Sort order"),
+          sort: z
+            .enum(["stars", "forks", "help-wanted-issues", "updated"])
+            .optional()
+            .describe("Sort field"),
+          order: z
+            .enum(["asc", "desc"])
+            .optional()
+            .default("desc")
+            .describe("Sort order"),
         },
         async ({ query, sort, order }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
           let endpoint = `/search/repositories?q=${encodeURIComponent(query)}&per_page=10`;
           if (sort) endpoint += `&sort=${sort}`;
           if (order) endpoint += `&order=${order}`;
-          
+
           const content = await makeGitHubRequest(endpoint, token);
-          
-          const reposList = content.items.map((repo: any) => 
-            `${repo.full_name} (⭐${repo.stargazers_count}) - ${repo.description || "No description"} - ${repo.html_url}`
-          ).join('\n');
-          
+
+          const reposList = content.items
+            .map(
+              (repo: any) =>
+                `${repo.full_name} (⭐${repo.stargazers_count}) - ${repo.description || "No description"} - ${repo.html_url}`,
+            )
+            .join("\n");
+
           return {
             content: [
               {
@@ -158,7 +191,7 @@ ${content.body || "No description"}`,
               },
             ],
           };
-        }
+        },
       );
 
       server.tool(
@@ -170,7 +203,7 @@ ${content.body || "No description"}`,
         async ({ username }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
           const content = await makeGitHubRequest(`/users/${username}`, token);
-          
+
           return {
             content: [
               {
@@ -188,23 +221,30 @@ Profile: ${content.html_url}`,
               },
             ],
           };
-        }
+        },
       );
 
       server.tool(
         "get_parent_of_sub_issue",
         "Get the parent issue of a sub-issue using GitHub Sub-Issues API",
         {
-          owner: z.string().describe("Repository owner (username or organization)"),
+          owner: z
+            .string()
+            .describe("Repository owner (username or organization)"),
           repo: z.string().describe("Repository name"),
-          issue_number: z.number().describe("Sub-issue number to get parent for"),
+          issue_number: z
+            .number()
+            .describe("Sub-issue number to get parent for"),
         },
         async ({ owner, repo, issue_number }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
-          
+
           try {
-            const content = await makeGitHubRequest(`/repos/${owner}/${repo}/issues/${issue_number}/parent`, token);
-            
+            const content = await makeGitHubRequest(
+              `/repos/${owner}/${repo}/issues/${issue_number}/parent`,
+              token,
+            );
+
             return {
               content: [
                 {
@@ -223,7 +263,7 @@ ${content.body || "No description"}`,
               ],
             };
           } catch (error) {
-            if (error instanceof Error && error.message.includes('404')) {
+            if (error instanceof Error && error.message.includes("404")) {
               return {
                 content: [
                   {
@@ -235,36 +275,62 @@ ${content.body || "No description"}`,
             }
             throw error;
           }
-        }
+        },
       );
 
       server.tool(
         "list_sub_issues",
         "List sub-issues for a GitHub issue with pagination and filtering support",
         {
-          owner: z.string().describe("Repository owner (username or organization)"),
+          owner: z
+            .string()
+            .describe("Repository owner (username or organization)"),
           repo: z.string().describe("Repository name"),
-          issue_number: z.number().describe("Parent issue number to list sub-issues for"),
-          per_page: z.number().optional().default(30).describe("Number of results per page (max 100)"),
-          page: z.number().optional().default(1).describe("Page number of results to fetch"),
-          state: z.enum(["open", "closed", "all"]).optional().describe("Filter sub-issues by state"),
-          labels: z.string().optional().describe("Comma-separated list of label names to filter by"),
+          issue_number: z
+            .number()
+            .describe("Parent issue number to list sub-issues for"),
+          per_page: z
+            .number()
+            .optional()
+            .default(30)
+            .describe("Number of results per page (max 100)"),
+          page: z
+            .number()
+            .optional()
+            .default(1)
+            .describe("Page number of results to fetch"),
+          state: z
+            .enum(["open", "closed", "all"])
+            .optional()
+            .describe("Filter sub-issues by state"),
+          labels: z
+            .string()
+            .optional()
+            .describe("Comma-separated list of label names to filter by"),
         },
-        async ({ owner, repo, issue_number, per_page, page, state, labels }) => {
+        async ({
+          owner,
+          repo,
+          issue_number,
+          per_page,
+          page,
+          state,
+          labels,
+        }) => {
           const token = githubToken || process.env.GITHUB_PAT_FOR_PROJECT;
-          
+
           try {
             let endpoint = `/repos/${owner}/${repo}/issues/${issue_number}/sub_issues?per_page=${per_page}&page=${page}`;
-            
+
             if (state) {
               endpoint += `&state=${state}`;
             }
             if (labels) {
               endpoint += `&labels=${encodeURIComponent(labels)}`;
             }
-            
+
             const content = await makeGitHubRequest(endpoint, token);
-            
+
             if (!Array.isArray(content) || content.length === 0) {
               return {
                 content: [
@@ -275,13 +341,17 @@ ${content.body || "No description"}`,
                 ],
               };
             }
-            
-            const subIssuesList = content.map((issue: any) => 
-              `#${issue.number}: ${issue.title} (${issue.state}) - ${issue.html_url}`
-            ).join('\n');
-            
-            const totalText = content.length === per_page ? ` (showing page ${page})` : '';
-            
+
+            const subIssuesList = content
+              .map(
+                (issue: any) =>
+                  `#${issue.number}: ${issue.title} (${issue.state}) - ${issue.html_url}`,
+              )
+              .join("\n");
+
+            const totalText =
+              content.length === per_page ? ` (showing page ${page})` : "";
+
             return {
               content: [
                 {
@@ -291,7 +361,7 @@ ${content.body || "No description"}`,
               ],
             };
           } catch (error) {
-            if (error instanceof Error && error.message.includes('404')) {
+            if (error instanceof Error && error.message.includes("404")) {
               return {
                 content: [
                   {
@@ -303,21 +373,21 @@ ${content.body || "No description"}`,
             }
             throw error;
           }
-        }
+        },
       );
     },
     {
       serverInfo: {
-        name: 'GitHub MCP Server',
-        version: '1.0.0',
+        name: "GitHub MCP Server",
+        version: "1.0.0",
       },
     },
     {
       verboseLogs: true,
-    }
+    },
   );
-  
+
   return mcpHandler(request);
 };
 
-export { handler as GET, handler as POST, handler as DELETE };
+export { handler as DELETE, handler as GET, handler as POST };
