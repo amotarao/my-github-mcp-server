@@ -1,5 +1,5 @@
 import { createMcpHandler } from "mcp-handler";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const GITHUB_API_BASE = "https://api.github.com";
 const USER_AGENT = "GitHub-MCP-Server/1.0.0";
