@@ -8,8 +8,9 @@ This MCP server provides the following tools:
 
 - **get_parent_of_sub_issue**: Get the parent issue of a sub-issue using GitHub Sub-Issues API
 - **list_sub_issues**: List sub-issues for a GitHub issue with pagination and filtering support
-- **add_sub_issues**: Add multiple sub-issues to a GitHub issue using GitHub Sub-Issues API with batch processing support
 - **get_id_of_issue**: Get the internal GitHub issue ID from an issue number
+- **add_sub_issues**: Add multiple sub-issues to a GitHub issue using GitHub Sub-Issues API with batch processing support
+- **remove_sub_issues**: Remove multiple sub-issues from a GitHub issue using GitHub Sub-Issues API with batch processing support
 
 ## Installation
 
@@ -36,11 +37,7 @@ pnpm start
 
 The server supports optional GitHub API authentication via environment variables:
 
-- `GITHUB_TOKEN`: GitHub personal access token for authenticated requests (optional, but recommended for higher rate limits)
-
-## Deployment
-
-This server is configured for deployment on Vercel. The `vercel.json` configuration file is included.
+- `GITHUB_PERSONAL_ACCESS_TOKEN`: GitHub personal access token for authenticated requests (optional, but recommended for higher rate limits)
 
 ## MCP Integration
 
@@ -52,12 +49,19 @@ Add to your Claude Desktop configuration file:
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 **Linux**: `~/.config/claude/claude_desktop_config.json`
 
+### Server URLs
+
+- **Production**: `https://amon-github-mcp-server.vercel.app/mcp`
+- **Local Development**: `http://localhost:3000/mcp`
+
+### Configuration
+
 ```json
 {
   "mcpServers": {
     "github": {
       "type": "http",
-      "url": "https://your-deployment-url.vercel.app/mcp",
+      "url": "SERVER_URL_HERE",
       "headers": {
         "X-GITHUB-TOKEN": "your_github_personal_access_token_here"
       }
@@ -66,29 +70,7 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
-### Local Development
-
-For local testing, start the server:
-
-```bash
-pnpm dev
-```
-
-Then configure your MCP client to use:
-
-```json
-{
-  "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "http://localhost:3000/mcp",
-      "headers": {
-        "X-GITHUB-TOKEN": "your_github_personal_access_token_here"
-      }
-    }
-  }
-}
-```
+Replace `SERVER_URL_HERE` with the appropriate URL from the Server URLs section above.
 
 ### Authentication
 
@@ -96,11 +78,6 @@ The server reads the GitHub token from the `X-GITHUB-TOKEN` header in HTTP reque
 
 Without a token, the server works with GitHub's public API with standard rate limits.
 
-### Available Tools
+## Deployment
 
-Once configured, the following tools will be available in your MCP client:
-
-- `get_parent_of_sub_issue` - Get the parent issue of a sub-issue
-- `list_sub_issues` - List sub-issues with pagination and filtering
-- `add_sub_issues` - Add multiple sub-issues to a parent issue with batch processing
-- `get_id_of_issue` - Get the internal GitHub issue ID from an issue number
+This server is configured for deployment on Vercel. The `vercel.json` configuration file is included.
