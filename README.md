@@ -11,6 +11,8 @@ This MCP server provides the following tools:
 - **get_pull_request**: Get detailed information about a specific pull request including status, files changed, and metadata
 - **search_repositories**: Search GitHub repositories by query with sorting options
 - **get_user_info**: Get information about a GitHub user or organization
+- **get_parent_of_sub_issue**: Get the parent issue of a sub-issue using GitHub Sub-Issues API
+- **list_sub_issues**: List sub-issues for a GitHub issue with pagination and filtering support
 
 ## Installation
 
@@ -106,3 +108,5 @@ Once configured, the following tools will be available in your MCP client:
 - `get_pull_request` - Get pull request details
 - `search_repositories` - Search GitHub repositories
 - `get_user_info` - Get user or organization information
+- `get_parent_of_sub_issue` - Get parent issue of a sub-issue
+- `list_sub_issues` - List sub-issues with pagination and filtering
