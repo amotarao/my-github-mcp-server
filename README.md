@@ -36,11 +36,7 @@ pnpm start
 
 The server supports optional GitHub API authentication via environment variables:
 
-- `GITHUB_TOKEN`: GitHub personal access token for authenticated requests (optional, but recommended for higher rate limits)
-
-## Deployment
-
-This server is configured for deployment on Vercel. The `vercel.json` configuration file is included.
+- `GITHUB_PAT_FOR_PROJECT`: GitHub personal access token for authenticated requests (optional, but recommended for higher rate limits)
 
 ## MCP Integration
 
@@ -51,6 +47,8 @@ Add to your Claude Desktop configuration file:
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 **Linux**: `~/.config/claude/claude_desktop_config.json`
+
+#### Production
 
 ```json
 {
@@ -66,15 +64,7 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
-### Local Development
-
-For local testing, start the server:
-
-```bash
-pnpm dev
-```
-
-Then configure your MCP client to use:
+#### Local Development
 
 ```json
 {
@@ -96,11 +86,6 @@ The server reads the GitHub token from the `X-GITHUB-TOKEN` header in HTTP reque
 
 Without a token, the server works with GitHub's public API with standard rate limits.
 
-### Available Tools
+## Deployment
 
-Once configured, the following tools will be available in your MCP client:
-
-- `get_parent_of_sub_issue` - Get the parent issue of a sub-issue
-- `list_sub_issues` - List sub-issues with pagination and filtering
-- `add_sub_issues` - Add multiple sub-issues to a parent issue with batch processing
-- `get_id_of_issue` - Get the internal GitHub issue ID from an issue number
+This server is configured for deployment on Vercel. The `vercel.json` configuration file is included.
