@@ -51,12 +51,10 @@ const handler = async (request: Request) => {
             .describe("Sub-issue number to get parent for"),
         },
         async ({ owner, repo, issue_number }) => {
-          const token = githubToken;
-
           try {
             const content = await makeGitHubRequest(
               `/repos/${owner}/${repo}/issues/${issue_number}/parent`,
-              token,
+              githubToken,
             );
 
             return {
@@ -131,8 +129,6 @@ ${content.body || "No description"}`,
           state,
           labels,
         }) => {
-          const token = githubToken;
-
           try {
             let endpoint = `/repos/${owner}/${repo}/issues/${issue_number}/sub_issues?per_page=${per_page}&page=${page}`;
 
@@ -143,7 +139,7 @@ ${content.body || "No description"}`,
               endpoint += `&labels=${encodeURIComponent(labels)}`;
             }
 
-            const content = await makeGitHubRequest(endpoint, token);
+            const content = await makeGitHubRequest(endpoint, githubToken);
 
             if (!Array.isArray(content) || content.length === 0) {
               return {
@@ -201,12 +197,10 @@ ${content.body || "No description"}`,
           issue_number: z.number().describe("Issue number to get the ID for"),
         },
         async ({ owner, repo, issue_number }) => {
-          const token = githubToken;
-
           try {
             const content = await makeGitHubRequest(
               `/repos/${owner}/${repo}/issues/${issue_number}`,
-              token,
+              githubToken,
             );
 
             return {
@@ -264,8 +258,6 @@ ${content.body || "No description"}`,
           sub_issue_ids,
           replace_parent,
         }) => {
-          const token = githubToken;
-
           if (!sub_issue_ids || sub_issue_ids.length === 0) {
             return {
               content: [
@@ -294,7 +286,7 @@ ${content.body || "No description"}`,
                   headers: {
                     "User-Agent": USER_AGENT,
                     Accept: "application/vnd.github.v3+json",
-                    Authorization: `token ${token}`,
+                    Authorization: `token ${githubToken}`,
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify(requestBody),
@@ -362,8 +354,6 @@ ${content.body || "No description"}`,
             ),
         },
         async ({ owner, repo, issue_number, sub_issue_ids }) => {
-          const token = githubToken;
-
           if (!sub_issue_ids || sub_issue_ids.length === 0) {
             return {
               content: [
@@ -391,7 +381,7 @@ ${content.body || "No description"}`,
                   headers: {
                     "User-Agent": USER_AGENT,
                     Accept: "application/vnd.github.v3+json",
-                    Authorization: `token ${token}`,
+                    Authorization: `token ${githubToken}`,
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify(requestBody),
