@@ -19,11 +19,6 @@ updates:
           - "next"
           - "eslint-config-next"
     open-pull-requests-limit: 5
-    reviewers:
-      - "amotarao"
-    commit-message:
-      prefix: "deps"
-      include: "scope"
     ignore:
       - dependency-name: "zod"
         update-types: ["version-update:semver-major"]
