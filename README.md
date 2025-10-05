@@ -7,6 +7,8 @@ A GitHub MCP (Model Context Protocol) server implementation that provides tools 
 This MCP server provides the following tools:
 
 - **get_parent_of_sub_issue**: Get the parent issue of a sub-issue using GitHub Sub-Issues API
+- **get_sub_issue**: Get detailed information about a specific issue (including sub-issues)
+
 - **list_sub_issues**: List sub-issues for a GitHub issue with pagination and filtering support
 - **get_id_of_issue**: Get the internal GitHub issue ID from an issue number
 - **get_ids_of_issues**: Get the internal GitHub issue IDs from multiple issue numbers with batch processing support

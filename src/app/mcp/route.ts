@@ -89,6 +89,59 @@ ${content.body || "No description"}`,
           }
         },
       );
+      server.tool(
+        "get_sub_issue",
+        "Get detailed information about a specific issue (including sub-issues)",
+        {
+          owner: z
+            .string()
+            .describe("Repository owner (username or organization)"),
+          repo: z.string().describe("Repository name"),
+          issue_number: z.number().describe("Issue number to get details for"),
+        },
+        async ({ owner, repo, issue_number }) => {
+          try {
+            const content = await makeGitHubRequest(
+              `/repos/${owner}/${repo}/issues/${issue_number}`,
+              githubToken,
+            );
+
+            const labels = content.labels
+              .map((label: any) => label.name)
+              .join(", ");
+
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Issue #${content.number}: ${content.title}
+State: ${content.state}
+Author: ${content.user.login}
+Created: ${content.created_at}
+Updated: ${content.updated_at}
+Labels: ${labels || "None"}
+URL: ${content.html_url}
+
+Description:
+${content.body || "No description"}`,
+                },
+              ],
+            };
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("404")) {
+              return {
+                content: [
+                  {
+                    type: "text",
+                    text: `Issue #${issue_number} not found in ${owner}/${repo}.`,
+                  },
+                ],
+              };
+            }
+            throw error;
+          }
+        },
+      );
 
       server.tool(
         "list_sub_issues",
